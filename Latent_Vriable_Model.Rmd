@@ -151,8 +151,49 @@ Pokemon_evo<-fread("Pokemon_evo.csv")
 ```
 
 ```{r}
-#
-#
+head(Pokemon_evo)
+```
+
+```{r}
+# Create 'Evolution_Stage' column in the main dataset
+Pokemon$Stage <- ifelse(Pokemon$Name %in% Pokemon_evo$Stage_1, 1,
+                                  ifelse(Pokemon$Name %in% Pokemon_evo$Stage_2, 2,
+                                         ifelse(Pokemon$Name %in% Pokemon_evo$Stage_3, 3, 0)))
+
+Pokemon_x1 = Pokemon[,c('HP', 'Attack', 'Defense','Sp..Atk', 'Sp..Def', 'Speed', 'Stage')]
+
+Pokemon_x1_scaled = scale(Pokemon_x1, center = FALSE)
+```
+
+```{r}
+ggpairs(as.data.frame(Pokemon_x1_scaled)) 
+```
+
+```{r}
+# Factor Analysis
+corrplot(cor(Pokemon_x1_scaled, use="complete.obs"), order = "hclust", tl.col='black', tl.cex=.75)
+```
+
+```{r}
+Pokemon_df1 <- as.data.frame(Pokemon_x1_scaled)
+
+EFAresult1_1 = factanal(~ ., data=Pokemon_df1, factors = 2, rotation = "none", 
+                      na.action = na.exclude) #note the formula specification allows NA 
+EFAresult1_1
+loadings_fac1_1 = EFAresult1_1$loadings[,1] #loadings for first factor (1st column of Lambda)
+loadings_fac1_1
+
+load = EFAresult1_1$loadings[,1:2]
+plot(load, type="n") # set up plot 
+text(load,labels=names(Pokemon_df1),cex=.7) # add variable names
+
+EFAresult2_1 = factanal(~ ., data=Pokemon_df1, factors = 2, rotation = "varimax", 
+                      na.action = na.exclude)
+EFAresult2_1
+
+load = EFAresult2_1$loadings[,1:2]
+plot(load, type="n") # set up plot 
+text(load,labels=names(Pokemon_df1),cex=.7) # add variable names
 ```
 
 Comment of the result:
@@ -160,6 +201,7 @@ Comment of the result:
 ```         
 Please write your answer in full sentences.
 ```
+Even after add the new variable 'Stage',　there was little change in the effects of the initial six major characteristics of Pokémon on the two main potential components.Stage appeared to contribute little to either of the two main potential components.
 
 ## Additional Material
 
